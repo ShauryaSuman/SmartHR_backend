@@ -40,7 +40,7 @@ def read_templates(user_id: str):
 
 
 @router.get("/job_description/templates/{template_id}", response_model=Template)
-def read_template(template_id: str, user_id: str):
+def read_template(user_id: str, template_id: str):
     template = templates_collection.find_one({"_id": ObjectId(template_id), "user_id": user_id})
     if template:
         logger.info(f"Retrieved job description template with ID: {template_id} for user: {user_id}")
@@ -50,7 +50,7 @@ def read_template(template_id: str, user_id: str):
 
 
 @router.put("/job_description/templates/{template_id}", response_model=Template)
-def update_template(template_id: str, template: TemplateUpdate, user_id: str):
+def update_template(user_id: str, template_id: str, template: TemplateUpdate):
     update_data = template.model_dump()
     if not update_data:
         logger.error("No data provided for update")
@@ -75,7 +75,7 @@ def update_template(template_id: str, template: TemplateUpdate, user_id: str):
 
 
 @router.delete("/job_description/templates/{template_id}", response_model=Template)
-def delete_template(template_id: str, user_id: str):
+def delete_template( user_id: str, template_id: str):
     try:
         template = templates_collection.find_one_and_delete({"_id": ObjectId(template_id), "user_id": user_id})
         if template:
