@@ -19,40 +19,38 @@ templates_collection = db["templates"]
 ###################################### API ENDPOINTS ##########################################
 ###############################################################################################
 
-@router.post("/templates/", response_model=Template)
+@router.post("/job_description/templates/", response_model=Template)
 def create_template(template: TemplateCreate):
-    print(template.model_dump())
     new_template = Template(
         template_id=str(ObjectId()),
         created_at=datetime.now(),
         modified_time=datetime.now(),
         **template.model_dump()
     )
-    print("3333333333", new_template)
     templates_collection.insert_one(new_template.model_dump())
-    logger.info(f"Created new template with ID: {new_template.template_id}")
+    logger.info(f"Created new job description template with ID: {new_template.template_id}")
     return new_template
 
 
-@router.get("/templates/", response_model=List[Template])
-def read_templates():
-    templates = list(templates_collection.find())
-    logger.info("Retrieved all templates")
+@router.get("/job_description/templates/", response_model=List[Template])
+def read_templates(user_id: str):
+    templates = list(templates_collection.find({"user_id": user_id}))
+    logger.info(f"Retrieved all job description templates for user: {user_id}")
     return [Template(**template) for template in templates]
 
 
-@router.get("/templates/{template_id}", response_model=Template)
-def read_template(template_id: str):
-    template = templates_collection.find_one({"_id": ObjectId(template_id)})
+@router.get("/job_description/templates/{template_id}", response_model=Template)
+def read_template(template_id: str, user_id: str):
+    template = templates_collection.find_one({"_id": ObjectId(template_id), "user_id": user_id})
     if template:
-        logger.info(f"Retrieved template with ID: {template_id}")
+        logger.info(f"Retrieved job description template with ID: {template_id} for user: {user_id}")
         return Template(**template)
-    logger.error(f"Template with ID: {template_id} not found")
+    logger.error(f"Job Description Template with ID: {template_id} not found for user: {user_id}")
     raise HTTPException(status_code=404, detail="Template not found")
 
 
-@router.put("/templates/{template_id}", response_model=Template)
-def update_template(template_id: str, template: TemplateUpdate, request: Request):
+@router.put("/job_description/templates/{template_id}", response_model=Template)
+def update_template(template_id: str, template: TemplateUpdate, user_id: str):
     update_data = template.model_dump()
     if not update_data:
         logger.error("No data provided for update")
@@ -61,31 +59,31 @@ def update_template(template_id: str, template: TemplateUpdate, request: Request
     update_data["modified_time"] = datetime.now()
     try:
         result = templates_collection.update_one(
-            {"_id": ObjectId(template_id)},
+            {"_id": ObjectId(template_id), "user_id": user_id},
             {"$set": template.model_dump()}
         )
         if result.modified_count == 1:
-            updated_template = templates_collection.find_one({"_id": ObjectId(template_id)})
-            logger.info(f"Updated template with ID: {template_id}")
+            updated_template = templates_collection.find_one({"_id": ObjectId(template_id), "user_id": user_id})
+            logger.info(f"Updated job description template with ID: {template_id} for user: {user_id}")
             return Template(**updated_template)
-        logger.error(f"Template with ID: {template_id} not found for update")
+        logger.error(f"Job Description Template with ID: {template_id} not found for update for user: {user_id}")
         raise HTTPException(status_code=404, detail="Template not found")
     
     except Exception as e:
-        logger.error(f"Error updating template with ID: {template_id} - {str(e)}")
+        logger.error(f"Error updating job description template with ID: {template_id} - {str(e)}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-@router.delete("/templates/{template_id}", response_model=Template)
-def delete_template(template_id: str):
+@router.delete("/job_description/templates/{template_id}", response_model=Template)
+def delete_template(template_id: str, user_id: str):
     try:
-        template = templates_collection.find_one_and_delete({"_id": ObjectId(template_id)})
+        template = templates_collection.find_one_and_delete({"_id": ObjectId(template_id), "user_id": user_id})
         if template:
-            logger.info(f"Deleted template with ID: {template_id}")
+            logger.info(f"Deleted job description template with ID: {template_id}")
             return Template(**template)
-        logger.error(f"Template with ID: {template_id} not found for deletion")
+        logger.error(f"Job Description Template with ID: {template_id} not found for deletion for user: {user_id}")
         raise HTTPException(status_code=404, detail="Template not found")
     
     except Exception as e:
-        logger.error(f"Error deleting template with ID: {template_id} - {str(e)}")
+        logger.error(f"Error deleting job description template with ID: {template_id} for user: {user_id} - {str(e)}")
         raise HTTPException(status_code=500, detail="Internal Server Error")

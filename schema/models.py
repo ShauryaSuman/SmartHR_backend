@@ -3,6 +3,7 @@ from typing import List, Optional
 from datetime import datetime
 
 class TemplateBase(BaseModel):
+    user_id: str
     job_title: str
     department: str
     location: str
