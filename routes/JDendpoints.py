@@ -9,7 +9,8 @@ from utils.logger import logger
 router = APIRouter()
 
 # MongoDB connection
-uri = "mongodb+srv://sumanshaurya957:1234@cluster0.ajekh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+# uri = "mongodb+srv://sumanshaurya957:1234@cluster0.ajekh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+uri = "https://cosmon-smarthr-dev-eastus-001.mongo.cosmos.azure.com:443/"
 client = MongoClient(uri)
 db = client["jd_system"]
 templates_collection = db["templates"]
